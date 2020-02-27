@@ -1,6 +1,7 @@
 import React from "react";
 import { Route } from "react-router-dom";
 import Space from "./utils/game/space";
+import BoardDisplay from "./utils/game/board_display";
 
 class App extends React.Component {
   constructor(props) {
@@ -15,12 +16,8 @@ class App extends React.Component {
   render () {
     return (
       <>
-        <Space 
-          startX={ 0 }
-          startY={ 0 }
-          width={ 500 }
-          height={ 500 }
-          duration={ 2 }
+        <BoardDisplay
+          
         />
         <input
           type="text"
