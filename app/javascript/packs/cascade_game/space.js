@@ -47,7 +47,21 @@ export default class Space {
             this.bottom.includes(space) ||
             this.top.includes(space)) &&
             this.sideShared(space)) {
-
+                const newStartX = Math.min(this.startX, space.startX);
+                const newStartY = Math.min(this.startY, space.startY);
+                const newWidth = Math.max(this.startX + this.width, space.startX + space.width) - newStartX;
+                const newHeight = Math.max(this.startY + this.height, space.startY + space.height) - newStartY;
+                const newLeftNeightbors = 
+                
+                const newSpace = new Space(
+                    this.game,
+                    newStartX,
+                    newStartY,
+                    newWidth,
+                    newHeight,
+                    Math.floor(this.duration + space.duration / 2)
+                );
+                
             }
     }
 
@@ -114,28 +128,29 @@ export default class Space {
     }
 
     divide(division) {
-        division = division || this.currentScore();
+        division = division ? parseInt(division) : this.currentScore();
+        if (!division) return;
         const innerLeft = [];
         const innerRight = [];
         const innerTop = [];
         const innerBottom = [];
         const newContent = [];
 
-        for (let x = 0; x < division; x++) {
+        for (let newContentX = 0; newContentX < division; newContentX++) {
             let newRow = [];
-            for (let y = 0; y < division; y++) {
+            for (let newContentY = 0; newContentY < division; newContentY++) {
                 let newSpace = new Space(
                     this.game,
-                    startX + width * x / division,
-                    startY + height * y / division,
-                    width / division,
-                    height / division,
-                    duration
+                    this.startX + this.width * newContentX / division,
+                    this.startY + this.height * newContentY / division,
+                    this.width / division,
+                    this.height / division,
+                    this.duration
                 );
 
                 newRow.push(newSpace);
 
-                switch (x) {
+                switch (newContentX) {
                     case 0:
                         innerLeft.push(newSpace);
                         break;
@@ -144,7 +159,7 @@ export default class Space {
                         break;
                 }
 
-                switch (y) {
+                switch (newContentY) {
                     case 0:
                         innerTop.push(newSpace);
                     break;
@@ -156,107 +171,66 @@ export default class Space {
             newContent.push(newRow);
         }
 
-        const sides = {
-            "top": "bottom",
-            "bottom": "top",
-            "left": "right",
-            "right": "left"
-        };
-
         newContent.forEach((row, x) => row.forEach((space, y) => {
             let neighbors;
-            Object.entries(sides).forEach(([spaceSelfDirection, possibleNeighborDirection]) => {
-                let boundaries = [];
-                [x, y].forEach((coord, ind) => {
-                    let negativeOffsetX;
-                    let negativeOffsetY;
-                    let positiveOffsetX;
-                    let positiveOffsetY;
-                    switch (ind) {
-                        case 0:
-                            negativeOffsetX = x - 1;
-                            negativeOffsetY = y;
-                            positiveOffsetX = x + 1;
-                            positiveOffsetY = y;
-                        case 1:
-                            negativeOffsetY = y - 1;
-                            negativeOffsetX = x;
-                            positiveOffsetY = y + 1;
-                            positiveOffsetX = x;
-                    }
-                    if (coord > 0) {
-                        space[spaceSelfDirection] = [newContent[negativeOffsetX][negativeOffsetY]]
-                    } else {
-                        neighbors = this[spaceSelfDirection].filter((possibleNeighbor) => {
-                            let selfIndex = possibleNeighbor[possibleNeighborDirection].indexOf(this);
-                            delete possibleNeighbor[possibleNeighborDirection][selfIndex];
-                            if (this.isAdjacent(possibleNeighbor)) {
-                                possibleNeighbor[possibleNeighborDirection].push(space);
-                                return true;
-                            }
-                            return false;
-                        });
-                        space[spaceSelfDirection] = neighbors;
-                    }
-                });
+            const sides = [
+                [
+                    "left",
+                    "right",
+                    x > 0,
+                    x - 1,
+                    y
+                ],
+                [
+                    "right",
+                    "left",
+                    x < division - 1,
+                    x + 1,
+                    y
+                ],
+                [
+                    "top",
+                    "bottom",
+                    y > 0,
+                    x,
+                    y - 1
+                ],
+                [
+                    "bottom",
+                    "top",
+                    y < division - 1,
+                    x,
+                    y + 1
+                ]
+            ];
+
+            sides.forEach(([spaceSelfDirection, possibleNeighborDirection, conditionMet, offsetX, offsetY]) => {
+                if (conditionMet) {
+                    space[spaceSelfDirection] = [newContent[offsetX][offsetY]];
+                } else {
+                    neighbors = this[spaceSelfDirection].filter((possibleNeighbor) => {
+                        let selfIndex = possibleNeighbor[possibleNeighborDirection].indexOf(this);
+                        delete possibleNeighbor[possibleNeighborDirection][selfIndex];
+                        if (this.isAdjacent(possibleNeighbor)) {
+                            possibleNeighbor[possibleNeighborDirection].push(space);
+                            return true;
+                        }
+                        return false;
+                    });
+                    space[spaceSelfDirection] = neighbors;
+                }
             });
-            if (x > 0) {
-                space.left = [newContent[x - 1][y]];
-            } else {
-                neighbors = this.left.filter((possibleNeighbor) => {
-                    let selfIndex = possibleNeighbor.right.indexOf(this);
-                    delete possibleNeighbor.right[selfIndex];
-                    if (this.isAdjacent(possibleNeighbor)) {
-                        possibleNeighbor.right.push(space);
-                        return true;
-                    }
-                    return false;
-                });
-                space.left = neighbors;
-            }
-            if (x < division - 1) {
-                space.right = [newContent[x + 1][y]];
-            } else {
-                neighbors = [this.right.filter((possibleNeighbor) => {
-                    let selfIndex = possibleNeighbor.left.indexOf(this);
-                    delete possibleNeighbor.left[selfIndex];
-                    if (this.isAdjacent(possibleNeighbor)) {
-                        possibleNeighbor.left.push(space);
-                        return true;
-                    }
-                    return false;
-                })];
-                space.right = neighbors;
-            }
-            if (y > 0) {
-                space.top = [newContent[x][y - 1]];
-            } else {
-                neighbors = [this.top.filter((possibleNeighbor) => {
-                    let selfIndex = possibleNeighbor.bottom.indexOf(this);
-                    delete possibleNeighbor.bottom[selfIndex];
-                    if (this.isAdjacent(possibleNeighbor)) {
-                        possibleNeighbor.bottom.push(space);
-                        return true;
-                    }
-                    return false;
-                })];
-                space.top = neighbors;
-            }
-            if (y < division - 1) {
-                space.bottom = [newContent[x][y + 1]];
-            } else {
-                neighbors = [this.bottom.filter((possibleNeighbor) => {
-                    let selfIndex = possibleNeighbor.top.indexOf(this);
-                    delete possibleNeighbor.top[selfIndex];
-                    if (this.isAdjacent(possibleNeighbor)) {
-                        possibleNeighbor.top.push(space);
-                        return true;
-                    }
-                    return false;
-                })];
-                space.bottom = neighbors;
-            }
-        }))
+        }));
+
+        delete this.game.spaces[[this.startX, this.startY]];
+        const newGameSpaces = {};
+        newContent.flat().forEach((space) => newGameSpaces[[space.startX, space.startY]] = space);
+        this.game.spaces = Object.assign({}, this.game.spaces, newGameSpaces);
+    }
+
+    score(player) {
+        this.content[player] = this.content[player] ? this.content[player] + 1 : 1;
+        this.tileTotal += 1;
     }
 
 }
