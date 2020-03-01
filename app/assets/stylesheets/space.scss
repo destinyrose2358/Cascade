@@ -1,0 +1,42 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body > :first-child {
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    align-items: baseline;
+}
+
+input, select {
+    margin-top: auto;
+    margin-bottom: 0;
+}
+
+.app {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100vw;
+    height: 100vh;
+    padding: 10px;
+    & .game-display {
+        border-top: 1px solid black;
+        border-left: 1px solid black;
+        box-sizing: content-box;
+        position: relative;
+    }
+}
+
+.space-edges {
+    position: absolute;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
+    background: white;
+    border-right: 1px solid black;
+    border-bottom: 1px solid black;
+}
