@@ -9,7 +9,7 @@ export default class Space {
         width = 400,
         height = 400,
         duration = 2,
-        content = {}
+        content = {content: []}
     ) {
         this.game = game;
         this.startX = startX;
@@ -42,27 +42,52 @@ export default class Space {
     }
 
     merge(space) {
-        if ((this.left.includes(space) ||
-            this.right.includes(space) ||
-            this.bottom.includes(space) ||
-            this.top.includes(space)) &&
-            this.sideShared(space)) {
-                const newStartX = Math.min(this.startX, space.startX);
-                const newStartY = Math.min(this.startY, space.startY);
-                const newWidth = Math.max(this.startX + this.width, space.startX + space.width) - newStartX;
-                const newHeight = Math.max(this.startY + this.height, space.startY + space.height) - newStartY;
-                const newLeftNeightbors = 
-                
-                const newSpace = new Space(
-                    this.game,
-                    newStartX,
-                    newStartY,
-                    newWidth,
-                    newHeight,
-                    Math.floor(this.duration + space.duration / 2)
-                );
-                
+        const sides = ["left", "right", "top", "bottom"];
+        if (sides.some(side => this[side].includes(space)) && this.sideShared(space)) {
+            const newStartX = Math.min(this.startX, space.startX);
+            const newStartY = Math.min(this.startY, space.startY);
+            const newWidth = Math.max(this.startX + this.width, space.startX + space.width) - newStartX;
+            const newHeight = Math.max(this.startY + this.height, space.startY + space.height) - newStartY;
+            const newContent = { content: [] };
+            const addContent = (content) => {
+                Object.entries(content).forEach(([key, value]) => {
+                    if (key === "content") {
+                        newContent.content.concat(value);
+                    } else {
+                        newContent[key] = newContent[key] ? newContent[key] + value : value;
+                    }
+                });
             }
+            addContent(this.content);
+            addContent(space.content);
+
+            const newSpace = new Space(
+                this.game,
+                newStartX,
+                newStartY,
+                newWidth,
+                newHeight,
+                Math.floor(this.duration + space.duration / 2),
+                newContent
+            );
+            
+            sides.forEach(side => {
+                const newSideNeighbors = [...(newSpace.isAdjacent(this[side][0]) ? this[side] : []), ...(newSpace.isAdjacent(space[side][0]) ? space[side] : [])];
+                newSpace[side] = newSideNeighbors
+            });
+
+            this.removeSelf();
+            space.removeSelf();
+            this.add(newSpace);
+        }
+    }
+
+    add(space) {
+        this.game.spaces[[space.startX, space.startY]] = space;
+    }
+
+    removeSelf() {
+        delete this.game.spaces[[this.startX, this.startY]]
     }
 
     isAdjacent(space) {
