@@ -3,9 +3,14 @@ import Space from "./space";
 export default class Game {
     constructor(
         turns = 20,
-        size = 400,
+        deck = new Deck(),
+        players,
+        actions
     ) {
-        this.spaces = {[[0,0]]: new Space(this) };
-        this.size = size;
+        this.turns = turns;
+        this.timer = new TimerSet();
+        this.root = new SpaceNode(this, this.timer);
+        this.deck = deck;
+        this.players = players;
     }
 }
