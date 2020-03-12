@@ -21,6 +21,8 @@ export default class Space {
         this.bottom = [];
         this.top = [];
         this.duration = duration;
+        //content starts as an object with player : score pairs
+        //later it will become a TileBoard or MergedTileBoard
         this.content = content;
         this.tileTotal = Object.values(this.content).reduce((acc, item) => {
             if (typeof item === "number") {
@@ -78,13 +80,15 @@ export default class Space {
 
             this.removeSelf();
             space.removeSelf();
-            this.add(newSpace);
+            this.addtoBoard(newSpace);
         }
     }
 
-    add(space) {
+    addToBoard(space) {
         this.game.spaces[[space.startX, space.startY]] = space;
     }
+
+
 
     removeSelf() {
         delete this.game.spaces[[this.startX, this.startY]]
@@ -256,6 +260,14 @@ export default class Space {
     score(player) {
         this.content[player] = this.content[player] ? this.content[player] + 1 : 1;
         this.tileTotal += 1;
+    }
+
+    receiveTileBoard(tileBoard) {
+        this.content.content.push(tileBoard);
+        this.processContent();
+    }
+
+    processContent() {
     }
 
 }

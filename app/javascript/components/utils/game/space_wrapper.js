@@ -12,6 +12,7 @@ export default class SpaceWrapper extends React.Component {
                 <div
                     className={`player-${key}`}
                     style={ counterStyle }
+                    key={key}
                 >
                     {value}
                 </div>

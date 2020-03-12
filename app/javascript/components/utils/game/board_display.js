@@ -9,7 +9,10 @@ export default class BoardDisplay extends React.Component {
     render() {
         let { game } = this.props;
         const spaces = Object.values(game.spaces).map(space => (
-            <SpaceWrapper space={space} />
+            <SpaceWrapper
+                space={space}
+                key={`space-${space.startX}-${space.startY}`}
+            />
         ));
         return (
             <div
