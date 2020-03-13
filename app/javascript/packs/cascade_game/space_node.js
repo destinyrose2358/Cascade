@@ -17,10 +17,20 @@ export default class SpaceNode {
         this.endX = endX;
         this.endY = endY;
         this.contents = contents;
+        this.parents = [];
+        this.totalTiles = Object.values(contents).reduce((acc, total) => acc + total, 0);
     }
 
     score(player, amount = 1) {
         this.contents[player] = this.contents[player] ? this.contents[player] + amount : amount;
+    }
+
+    update() {
+        if (Math.floor(Math.sqrt(this.totalTiles)) ** 2 === this.totalTiles) {
+            //create tileboard node
+        } else if (this.totalTiles) {
+            
+        }
     }
 
     transferTiles(player, space, amount = 1) {
@@ -51,11 +61,18 @@ export default class SpaceNode {
                 newContents
             );
 
-            this.parent.replace(this, newSpace);
-            space.parent.replace(space, newSpace);
+            this.replaceSeltWith(newSpace);
+            space.replaceSeltWith(newSpace);
             return true;
         }
         return false;
+    }
+
+    replaceSelfWith(space) {
+        this.parents.forEach(([parent, x, y]) => {
+            parent.replaceIndex(space, x, y);
+            space.parents.push([parent, x, y]);
+        });
     }
 
     isNeighbor(space) {
