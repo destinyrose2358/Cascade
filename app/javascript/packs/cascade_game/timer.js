@@ -1,9 +1,10 @@
 
 
 export default class Timer {
-    constructor(duration = 1, phase = 1) {
+    constructor(timerSet, duration = 1, phase = 1) {
         this.duration = duration;
         this.phase = phase;
+        this.timerSet = timerSet;
         this.nodes = new Set();
     }
 
@@ -18,6 +19,10 @@ export default class Timer {
 
     remove(space) {
         this.nodes.delete(space);
+    }
+
+    averageWith(timer) {
+        return this.timerSet.createNewTimer((this.duration + timer.duration) / 2, (this.phase + timer.phase) / 2);
     }
 
 }

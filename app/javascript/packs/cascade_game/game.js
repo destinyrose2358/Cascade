@@ -8,8 +8,8 @@ export default class Game {
         actions
     ) {
         this.turns = turns;
-        this.timer = new TimerSet();
-        this.root = new SpaceNode(this, this.timer);
+        this.timerSet = new TimerSet();
+        this.root = new SpaceNode(this, this.timerSet.timers[0]);
         this.deck = deck;
         this.players = players;
     }

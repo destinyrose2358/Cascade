@@ -1,3 +1,5 @@
+
+
 const SIDES = ["startX", "startY", "endX", "endY"];
 
 export default class SpaceNode {
@@ -12,24 +14,31 @@ export default class SpaceNode {
     ) {
         this.game = game;
         this.timer = timer;
+        timer.add(this);
         this.startX = startX;
         this.startY = startY;
         this.endX = endX;
         this.endY = endY;
         this.contents = contents;
-        this.parents = [];
+        this.parents = []; //[parent, x, y]
         this.totalTiles = Object.values(contents).reduce((acc, total) => acc + total, 0);
     }
 
     score(player, amount = 1) {
         this.contents[player] = this.contents[player] ? this.contents[player] + amount : amount;
+        this.totalTiles += amount;
+        this.updateParents();
+    }
+
+    updateParents() {
+        this.parents.forEach(([parent, x, y]) => parent.update());
     }
 
     update() {
         if (Math.floor(Math.sqrt(this.totalTiles)) ** 2 === this.totalTiles) {
             //create tileboard node
         } else if (this.totalTiles) {
-            
+            //create a division of the space
         }
     }
 
@@ -40,6 +49,10 @@ export default class SpaceNode {
             return true;
         }
         return false;
+    }
+
+    divide(num = this.totalTiles) {
+        //build this after the ConnectionNode
     }
 
     merge(space) {
@@ -54,12 +67,16 @@ export default class SpaceNode {
                 newContents[player] = newContents[player] ? newContents[player] + score : score;
             });
 
+            let newTimer = this.timer.averageWith(space.timer);
+
             let newSpace = new SpaceNode(
                 this.game,
-                this.timer,
+                newTimer,
                 ...newBounds,
                 newContents
             );
+
+            newTimer.add(newSpace);
 
             this.replaceSeltWith(newSpace);
             space.replaceSeltWith(newSpace);
@@ -73,6 +90,7 @@ export default class SpaceNode {
             parent.replaceIndex(space, x, y);
             space.parents.push([parent, x, y]);
         });
+        this.timer.remove(this);
     }
 
     isNeighbor(space) {
